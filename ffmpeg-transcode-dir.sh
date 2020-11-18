@@ -4,6 +4,7 @@
 shopt -s nullglob
 
 [[ -z "${1}" ]] && source='.' || source="${1}"
+[[ ! -d ./encoded ]] && mkdir ./encoded
 
 echo "Size of Directory before transcoding: $(du -hs --exclude "${source}/encoded/*" "${source}" | cut -f -1)"
 
