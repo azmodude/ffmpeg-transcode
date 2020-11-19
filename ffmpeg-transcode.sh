@@ -4,6 +4,7 @@
 # x264 version.
 
 ffmpeg=$(which ffmpeg)
+ffprobe=$(which ffprobe || which ffmpeg.ffprobe)
 preset="slow"
 
 parse_options()
@@ -32,7 +33,7 @@ if [[ -z ${_outputdir} ]]; then
 fi
 
 # if audio stream isn't aac, transcode. Else just copy it.
-#audio_type=$(ffprobe -v error -select_streams a:0 \
+#audio_type=$(${ffprobe} -v error -select_streams a:0 \
 #    -show_entries stream=codec_name -of default=nw=1 "${_file}"| cut -d'=' -f2)
 #if [[ ${audio_type} == 'aac' ]]; then
 #    audio='-acodec copy'
@@ -56,7 +57,7 @@ else
 fi
 
 # get resolution
-resolution=$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "${_file}")
+resolution=$(${ffprobe} -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "${_file}")
 if [[ $(echo $resolution | sed -r 's/^([0-9]+).*/\1/') -gt 2500 ]]; then
     vcodec="x265"
 else

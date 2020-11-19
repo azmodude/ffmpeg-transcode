@@ -4,6 +4,7 @@
 # x265 version.
 
 ffmpeg=$(which ffmpeg)
+ffprobe=$(which ffprobe || which ffmpeg.ffprobe)
 
 parse_options()
 {
@@ -31,7 +32,7 @@ if [[ -z ${_outputdir} ]]; then
 fi
 
 # if audio stream isn't aac, transcode. Else just copy it.
-audio_type=$(ffprobe -v error -select_streams a:0 \
+audio_type=$(${ffprobe} -v error -select_streams a:0 \
     -show_entries stream=codec_name -of default=nw=1 "${_file}"| cut -d'=' -f2)
 if [[ ${audio_type} == 'aac' ]]; then
     audio='-acodec copy'
