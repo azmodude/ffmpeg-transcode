@@ -3,8 +3,8 @@
 # (re-)encode a video file another (possibly better compressed) file.
 # x265 version.
 
-ffmpeg=$(which ffmpeg)
-ffprobe=$(which ffprobe || which ffmpeg.ffprobe)
+ffmpeg=$(command -v ffmpeg)
+ffprobe=$(command -v ffprobe || command -v ffmpeg.ffprobe)
 
 parse_options()
 {
