@@ -57,12 +57,17 @@ else
 fi
 
 # get resolution
-resolution=$(${ffprobe} -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "${_file}")
+resolution=$(${ffprobe} -v error -select_streams v:0 -show_entries \
+    stream=width,height -of csv=s=x:p=0 "${_file}")
 if [[ $(echo $resolution | sed -r 's/^([0-9]+).*/\1/') -gt 2500 ]]; then
     vcodec="x265"
 else
     vcodec="x264"
 fi
+
+duration=$(${ffprobe} -v error -select_streams v:0 -show_entries stream=duration \
+    -of default=noprint_wrappers=1:nokey=1 -sexagesimal "${_file}")
+echo "${_file}: ${duration}"
 
 _common_options='-hide_banner -loglevel warning -stats'
 # $=audio forces word splitting. Else we would pass in -acodec... with ' quotes
