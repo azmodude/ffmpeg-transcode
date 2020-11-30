@@ -1,10 +1,12 @@
 #!/bin/bash
 
 # don't process empty globs
+
+set -vx
 shopt -s nullglob
 
 [[ -z "${1}" ]] && source='.' || source="${1}"
-[[ -z "${2}" ]] && preset='slow' || preset="${1}"
+[[ -z "${2}" ]] && preset='slow' || preset="${2}"
 
 [[ ! -d ./encoded ]] && mkdir ./encoded
 
