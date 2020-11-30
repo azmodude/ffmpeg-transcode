@@ -5,19 +5,19 @@
 
 ffmpeg=$(command -v ffmpeg)
 ffprobe=$(command -v ffprobe || command -v ffmpeg.ffprobe)
-preset="slow"
 
 parse_options()
 {
     local -a file filter _help
 
-    zparseopts -K -- i:=file f:=filter o:=outputdir h=_help
+    zparseopts -K -- i:=file p:=preset f:=filter o:=outputdir h=_help
     if [[ $file == "" || $outputdir == "" || "$_help" != "" ]]; then
         echo Usage: ffmpeg-encode.sh "-i input -o outputdirectory [-f filters]"
         exit 1
     fi
 
     _file=$file[2]
+    _preset=$preset[2]
     _filebase=$(basename ${_file})
     _vf=$filter[2]
     _outputdir=$outputdir[2]
@@ -77,7 +77,7 @@ if [[ ${vcodec} == "x264" ]]; then
         set -x
         ${ffmpeg} ${=_common_options} -i "${_file}" -vf ${_vf} -vcodec libx264 \
         -profile:v high -level 4.1 -map_metadata 0:g \
-        -preset "${preset}" -crf 23 \
+        -preset "${_preset}" -crf 23 \
         -movflags faststart ${=audio} -strict -2 \
         -metadata title="${_title}" \
         "${_outputdir}/${_outfile}"
@@ -86,7 +86,7 @@ if [[ ${vcodec} == "x264" ]]; then
     else
         set -x
         ${ffmpeg} ${=_common_options} -i "${_file}" -vcodec libx264 -profile:v high -level 4.1 \
-        -map_metadata 0:g -preset "${preset}" -crf 23 -movflags faststart \
+        -map_metadata 0:g -preset "${_preset}" -crf 23 -movflags faststart \
         ${=audio} -strict -2 -metadata title="${_title}" \
         "${_outputdir}/${_outfile}"
         [ $? -eq 0 ] || exit 1
@@ -97,7 +97,7 @@ else
         set -x
         ${ffmpeg} ${=_common_options} -i "${_file}" -vf ${_vf} -vcodec libx265 \
         -map_metadata 0:g \
-        -preset "${preset}" -crf 28 \
+        -preset "${_preset}" -crf 28 \
         -movflags faststart ${=audio} -strict -2 \
         -metadata title="${_title}" \
         "${_outputdir}/${_outfile}"
@@ -106,7 +106,7 @@ else
     else
         set -x
         ${ffmpeg} ${=_common_options} -i "${_file}" -vcodec libx265 \
-        -map_metadata 0:g -preset "${preset}" -crf 28 -movflags faststart \
+        -map_metadata 0:g -preset "${_preset}" -crf 28 -movflags faststart \
         ${=audio} -strict -2 -metadata title="${_title}" \
         "${_outputdir}/${_outfile}"
         [ $? -eq 0 ] || exit 1
