@@ -2,7 +2,6 @@
 
 # don't process empty globs
 
-set -vx
 shopt -s nullglob
 
 [[ -z "${1}" ]] && source='.' || source="${1}"
