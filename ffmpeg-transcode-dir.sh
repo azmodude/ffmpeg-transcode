@@ -13,7 +13,7 @@ shopt -s nullglob
 
 echo "Size of Directory before transcoding: $(du -hs --exclude "${source}/encoded/*" "${source}" | cut -f -1)"
 
-for file in $(find "${source}" \
+find "${source}" \
     -maxdepth 1 \
     ! -path "./encoded/*" \
     \( -iname \*.flv \
@@ -23,7 +23,7 @@ for file in $(find "${source}" \
     -o -iname \*.mkv \
     -o -iname \*.mp4 \
     -o -iname \*.avi \
-    -o -iname \*.mpg \) | sort -R); do
+    -o -iname \*.mpg \) | sort -R | while read file; do
     filename=$(basename -- "$file")
     extension="${filename##*.}"
     filename="${filename%.*}"
