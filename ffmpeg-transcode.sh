@@ -69,7 +69,7 @@ duration=$(${ffprobe} -v error -select_streams v:0 -show_entries stream=duration
     -of default=noprint_wrappers=1:nokey=1 -sexagesimal "${_file}")
 echo "${_file}: ${duration}"
 
-_common_options='-hide_banner -loglevel warning -stats'
+_common_options='-nostdin -hide_banner -loglevel warning -stats'
 # $=audio forces word splitting. Else we would pass in -acodec... with ' quotes
 # zsh does it that way, bash does not
 if [[ ${vcodec} == "x264" ]]; then
