@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 # don't process empty globs
 
 shopt -s nullglob
@@ -26,8 +28,8 @@ for file in $(find "${source}" \
     extension="${filename##*.}"
     filename="${filename%.*}"
 
-    ffmpeg-transcode.sh -i "${file}" \
-        -p "${preset}" -f "crop=$(ffmpeg-cropdetect.sh "${file}" -q)" \
+    "${SCRIPT_DIR}/ffmpeg-transcode.sh" -i "${file}" \
+        -p "${preset}" -f "crop=$(${SCRIPT_DIR}/ffmpeg-cropdetect.sh "${file}" -q)" \
         -o encoded && [[ -f "encoded/${filename}.mp4" ]] && rm -f "${file}"
 done
 
