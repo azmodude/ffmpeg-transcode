@@ -1,5 +1,6 @@
 #!/bin/zsh
 
+set -vx
 # (re-)encode a video file another (possibly better compressed) file.
 # x264 version.
 
