@@ -11,10 +11,9 @@ shopt -s nullglob
 
 [[ ! -d ./encoded ]] && mkdir ./encoded
 
-echo "Size of Directory before transcoding: $(du -hs --exclude "${source}/encoded/*" "${source}" | cut -f -1)"
+echo "Size of Directory before transcoding: $(du -hs --exclude "${source}/encoded/*" "$source" | cut -f -1)"
 
-set -vx
-find "${source}" \
+find "$source" \
   -maxdepth 1 \
   ! -path "./encoded/*" \
   \( -iname \*.flv \
@@ -26,14 +25,14 @@ find "${source}" \
   -o -iname \*.avi \
   -o -iname \*.mpg \) \
   -print0 | while read -d $'\0' file; do
-  echo "${file}"
-  filename=$(basename -- "${file}")
+  echo "$file"
+  filename=$(basename -- "$file")
   extension="${filename##*.}"
   filename_no_extension="${filename%.*}"
 
-  "${SCRIPT_DIR}/ffmpeg-transcode.sh" -i "${file}" \
-    -p "${preset}" \
-    -o encoded && [[ -f "encoded/${filename_no_extension}.mp4" ]] && rm -f "${file}"
+  "${SCRIPT_DIR}/ffmpeg-transcode.sh" -i "$file" \
+    -p "$preset" \
+    -o encoded && [[ -f "encoded/${filename_no_extension}.mp4" ]] && rm -f "$file"
   #        -p "${preset}" -f "crop=$(${SCRIPT_DIR}/ffmpeg-cropdetect.sh "${file}" -q)" \
 done
 
