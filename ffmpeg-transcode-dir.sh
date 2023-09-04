@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -vx
-
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
 # don't process empty globs
