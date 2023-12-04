@@ -44,6 +44,12 @@ echo "Duration of ${_filebase}: ${duration}"
 # The leading < /dev/null IS IMPORTANT, else ffmpeg drops into command mode, reading stdin
 cropsize=$(< /dev/null ffmpeg -ss 00:03:00 -i "$_file" -vf cropdetect -t 00:03:00 -f null - 2>&1 | awk '/crop/ { print $NF }' | tail -1)
 echo "Cropsize of ${_filebase} is: ${cropsize}"
+# keep 1080p at 1080
+# make this an array, so it expands to nothing if it is actually empty down below
+filter=()
+if [[ "${cropsize}" != "crop=1920:1072:0:4" ]]; then
+  filter+="-vf '${cropsize}'"
+fi
 
 # if audio stream isn't aac, transcode. Else just copy it.
 #audio_type=$(${ffprobe} -v error -select_streams a:0 \
@@ -83,7 +89,7 @@ _common_options='-nostdin -hide_banner -loglevel warning -stats'
 # zsh does it that way, bash does not
 if [[ ${vcodec} == "x264" ]]; then
     set -x
-    time "$ffmpeg" "${=_common_options}" -i "$_file" -vf "${cropsize}" -vcodec libx264 \
+    time "$ffmpeg" "${=_common_options}" -i "$_file" "${filter[@]}" -vcodec libx264 \
     -profile:v high -level 4.1 -map_metadata 0:g \
     -preset "$_preset" -crf 23 \
     -movflags faststart "${=audio}" -strict -2 \
@@ -93,7 +99,7 @@ if [[ ${vcodec} == "x264" ]]; then
     set +x
 else
     set -x
-    time "$ffmpeg" "${=_common_options}" -i "$_file" -vf "${cropsize}" -vcodec libx265 \
+    time "$ffmpeg" "${=_common_options}" -i "$_file" "${filter[@]}" -vcodec libx265 \
     -map_metadata 0:g \
     -preset "$_preset" -crf 28 \
     -movflags faststart "${=audio}" -strict -2 \
