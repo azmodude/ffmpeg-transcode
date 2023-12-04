@@ -6,6 +6,7 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
 shopt -s nullglob
 
+set -vx
 [[ -z "${1}" ]] && source='.' || source="${1}"
 [[ -z "${2}" ]] && preset='slow' || preset="${2}"
 
@@ -32,8 +33,8 @@ find "$source" \
 
   "${SCRIPT_DIR}/ffmpeg-transcode.sh" -i "$file" \
     -p "$preset" \
-    -o encoded && [[ -f "encoded/${filename_no_extension}.mp4" ]] && rm -f "$file"
-  #        -p "${preset}" -f "crop=$(${SCRIPT_DIR}/ffmpeg-cropdetect.sh "${file}" -q)" \
+    -o encoded &&
+    [[ -f "encoded/${filename_no_extension}.mp4" ]] && rm -f "$file"
 done
 
 echo "Size of directory after transcoding: $(du -hs "${source}/encoded" | cut -f -1)"

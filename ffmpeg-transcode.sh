@@ -35,6 +35,10 @@ fi
 echo "--------------------------------------------------------------------------------"
 size_before=$(du -hs "$_file" | cut -f1)
 echo "Size of ${_filebase} before transcode: ${size_before}"
+# get dimension to crop a video by it's (possible) black borders, skipping to minute three first, process 120 frames
+# The leading < /dev/null IS IMPORTANT, else ffmpeg drops into command mode, reading stdin
+cropsize=$(< /dev/null ffmpeg -ss 00:03:00 -i "$_file" -vf cropdetect -vframes 120 -f null - 2>&1 | awk '/crop/ { print $NF }' | tail -1)
+echo "Cropsize is: ${cropsize}"
 
 # if audio stream isn't aac, transcode. Else just copy it.
 #audio_type=$(${ffprobe} -v error -select_streams a:0 \
@@ -77,45 +81,25 @@ _common_options='-nostdin -hide_banner -loglevel warning -stats'
 # $=audio forces word splitting. Else we would pass in -acodec... with ' quotes
 # zsh does it that way, bash does not
 if [[ ${vcodec} == "x264" ]]; then
-    if [[ ${_vf} != "" ]]; then
-        set -x
-        "$ffmpeg" "${=_common_options}" -i "$_file" -vf "$_vf" -vcodec libx264 \
-        -profile:v high -level 4.1 -map_metadata 0:g \
-        -preset "$_preset" -crf 23 \
-        -movflags faststart "${=audio}" -strict -2 \
-        -metadata title="$_title" \
-        "${_outputdir}/${_outfile}"
-        [ $? -eq 0 ] || exit 1
-        set +x
-    else
-        set -x
-        "$ffmpeg" "${=_common_options}" -i "$_file" -vcodec libx264 -profile:v high -level 4.1 \
-        -map_metadata 0:g -preset "$_preset" -crf 23 -movflags faststart \
-        "${=audio}" -strict -2 -metadata title="$_title" \
-        "${_outputdir}/${_outfile}"
-        [ $? -eq 0 ] || exit 1
-        set +x
-    fi
+    set -x
+    "$ffmpeg" "${=_common_options}" -i "$_file" -vf "${cropsize}" -vcodec libx264 \
+    -profile:v high -level 4.1 -map_metadata 0:g \
+    -preset "$_preset" -crf 23 \
+    -movflags faststart "${=audio}" -strict -2 \
+    -metadata title="$_title" \
+    "${_outputdir}/${_outfile}"
+    [ $? -eq 0 ] || exit 1
+    set +x
 else
-    if [[ ${_vf} != "" ]]; then
-        set -x
-        "$ffmpeg" "${=_common_options}" -i "$_file" -vf "$_vf" -vcodec libx265 \
-        -map_metadata 0:g \
-        -preset "$_preset" -crf 28 \
-        -movflags faststart "${=audio}" -strict -2 \
-        -metadata title="$_title" \
-        "${_outputdir}/${_outfile}"
-        [ $? -eq 0 ] || exit 1
-        set +x
-    else
-        set -x
-        "$ffmpeg" "${=_common_options}" -i "$_file" -vcodec libx265 \
-        -map_metadata 0:g -preset "$_preset" -crf 28 -movflags faststart \
-        "${=audio}" -strict -2 -metadata title="$_title" \
-        "${_outputdir}/${_outfile}"
-        [ $? -eq 0 ] || exit 1
-        set +x
-    fi
+    set -x
+    "$ffmpeg" "${=_common_options}" -i "$_file" -vf "${cropsize}" -vcodec libx265 \
+    -map_metadata 0:g \
+    -preset "$_preset" -crf 28 \
+    -movflags faststart "${=audio}" -strict -2 \
+    -metadata title="$_title" \
+    "${_outputdir}/${_outfile}"
+    [ $? -eq 0 ] || exit 1
+    set +x
 fi
 
 size_after=$(du -hs "${_outputdir}/$_filebase" | cut -f1)
