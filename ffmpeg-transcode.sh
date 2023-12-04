@@ -32,6 +32,7 @@ if [[ -z ${_outputdir} ]]; then
     _outputdir='./done'
 fi
 
+echo "--------------------------------------------------------------------------------"
 size_before=$(du -hs "$_file" | cut -f1)
 echo "Size of ${_filebase} before transcode: ${size_before}"
 
@@ -119,3 +120,4 @@ fi
 
 size_after=$(du -hs "${_outputdir}/$_filebase" | cut -f1)
 echo "Size of ${_filebase} before transcode: ${size_after}"
+echo "--------------------------------------------------------------------------------"
