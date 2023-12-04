@@ -18,12 +18,12 @@ parse_options()
 
     _file=$file[2]
     _preset=$preset[2]
-    _filebase=$(basename ${_file})
+    _filebase=$(basename "$_file")
     _vf=$filter[2]
     _outputdir=$outputdir[2]
 
 }
-parse_options $*
+parse_options "$@"
 
 if [[ -z ${_outputdir} ]]; then
     if [[ ! -d ./done ]]; then
@@ -31,6 +31,9 @@ if [[ -z ${_outputdir} ]]; then
     fi
     _outputdir='./done'
 fi
+
+size_before=$(du -hs "$_file" | cut -f1)
+echo "Size of ${_filebase} before transcode: ${size_before}"
 
 # if audio stream isn't aac, transcode. Else just copy it.
 #audio_type=$(${ffprobe} -v error -select_streams a:0 \
@@ -50,23 +53,23 @@ audio='-c:a libfdk_aac -profile:a aac_he_v2 -b:a 32k'
 _title=$(echo "${(C)_file:t:r}" | sed -r 's/[-_.]/ /g')
 
 # if file already exists in outputdir, rename output
-if [ -e ${_outputdir}/${_file} ]; then
+if [ -e "$_outputdir/$_file" ]; then
     _outfile=${_filebase:r}_reencode.${_filebase:e}
 else
     _outfile=${_filebase:r}.mp4
 fi
 
 # get resolution
-resolution=$(${ffprobe} -v error -select_streams v:0 -show_entries \
-    stream=width,height -of csv=s=x:p=0 "${_file}")
-if [[ $(echo $resolution | sed -r 's/^([0-9]+).*/\1/') -gt 2500 ]]; then
+resolution=$("$ffprobe" -v error -select_streams v:0 -show_entries \
+    stream=width,height -of csv=s=x:p=0 "$_file")
+if [[ $(echo "$resolution" | sed -r 's/^([0-9]+).*/\1/') -gt 2500 ]]; then
     vcodec="x265"
 else
     vcodec="x264"
 fi
 
-duration=$(${ffprobe} -v error -select_streams v:0 -show_entries stream=duration \
-    -of default=noprint_wrappers=1:nokey=1 -sexagesimal "${_file}")
+duration=$("$ffprobe" -v error -select_streams v:0 -show_entries stream=duration \
+    -of default=noprint_wrappers=1:nokey=1 -sexagesimal "$_file")
 echo "${_file}: ${duration}"
 
 _common_options='-nostdin -hide_banner -loglevel warning -stats'
@@ -75,19 +78,19 @@ _common_options='-nostdin -hide_banner -loglevel warning -stats'
 if [[ ${vcodec} == "x264" ]]; then
     if [[ ${_vf} != "" ]]; then
         set -x
-        ${ffmpeg} ${=_common_options} -i "${_file}" -vf ${_vf} -vcodec libx264 \
+        "$ffmpeg" "${=_common_options}" -i "$_file" -vf "$_vf" -vcodec libx264 \
         -profile:v high -level 4.1 -map_metadata 0:g \
-        -preset "${_preset}" -crf 23 \
-        -movflags faststart ${=audio} -strict -2 \
-        -metadata title="${_title}" \
+        -preset "$_preset" -crf 23 \
+        -movflags faststart "${=audio}" -strict -2 \
+        -metadata title="$_title" \
         "${_outputdir}/${_outfile}"
         [ $? -eq 0 ] || exit 1
         set +x
     else
         set -x
-        ${ffmpeg} ${=_common_options} -i "${_file}" -vcodec libx264 -profile:v high -level 4.1 \
-        -map_metadata 0:g -preset "${_preset}" -crf 23 -movflags faststart \
-        ${=audio} -strict -2 -metadata title="${_title}" \
+        "$ffmpeg" "${=_common_options}" -i "$_file" -vcodec libx264 -profile:v high -level 4.1 \
+        -map_metadata 0:g -preset "$_preset" -crf 23 -movflags faststart \
+        "${=audio}" -strict -2 -metadata title="$_title" \
         "${_outputdir}/${_outfile}"
         [ $? -eq 0 ] || exit 1
         set +x
@@ -95,22 +98,24 @@ if [[ ${vcodec} == "x264" ]]; then
 else
     if [[ ${_vf} != "" ]]; then
         set -x
-        ${ffmpeg} ${=_common_options} -i "${_file}" -vf ${_vf} -vcodec libx265 \
+        "$ffmpeg" "${=_common_options}" -i "$_file" -vf "$_vf" -vcodec libx265 \
         -map_metadata 0:g \
-        -preset "${_preset}" -crf 28 \
-        -movflags faststart ${=audio} -strict -2 \
-        -metadata title="${_title}" \
+        -preset "$_preset" -crf 28 \
+        -movflags faststart "${=audio}" -strict -2 \
+        -metadata title="$_title" \
         "${_outputdir}/${_outfile}"
         [ $? -eq 0 ] || exit 1
         set +x
     else
         set -x
-        ${ffmpeg} ${=_common_options} -i "${_file}" -vcodec libx265 \
-        -map_metadata 0:g -preset "${_preset}" -crf 28 -movflags faststart \
-        ${=audio} -strict -2 -metadata title="${_title}" \
+        "$ffmpeg" "${=_common_options}" -i "$_file" -vcodec libx265 \
+        -map_metadata 0:g -preset "$_preset" -crf 28 -movflags faststart \
+        "${=audio}" -strict -2 -metadata title="$_title" \
         "${_outputdir}/${_outfile}"
         [ $? -eq 0 ] || exit 1
         set +x
     fi
 fi
 
+size_after=$(du -hs "${_outputdir}/$_filebase" | cut -f1)
+echo "Size of ${_filebase} before transcode: ${size_after}"
