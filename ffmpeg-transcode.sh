@@ -40,9 +40,9 @@ duration=$("$ffprobe" -v error -select_streams v:0 -show_entries stream=duration
     -of default=noprint_wrappers=1:nokey=1 -sexagesimal "$_file")
 echo "Duration of ${_filebase}: ${duration}"
 
-# get dimension to crop a video by it's (possible) black borders, skipping to minute three first, process 120 frames
+# get dimension to crop a video by it's (possible) black borders, skipping to minute three first, process 3 minutes
 # The leading < /dev/null IS IMPORTANT, else ffmpeg drops into command mode, reading stdin
-cropsize=$(< /dev/null ffmpeg -ss 00:03:00 -i "$_file" -vf cropdetect -vframes 120 -f null - 2>&1 | awk '/crop/ { print $NF }' | tail -1)
+cropsize=$(< /dev/null ffmpeg -ss 00:03:00 -i "$_file" -vf cropdetect -t 00:03:00 -f null - 2>&1 | awk '/crop/ { print $NF }' | tail -1)
 echo "Cropsize of ${_filebase} is: ${cropsize}"
 
 # if audio stream isn't aac, transcode. Else just copy it.
