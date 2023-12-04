@@ -35,10 +35,15 @@ fi
 echo "--------------------------------------------------------------------------------"
 size_before=$(du -hs "$_file" | cut -f1)
 echo "Size of ${_filebase} before transcode: ${size_before}"
+
+duration=$("$ffprobe" -v error -select_streams v:0 -show_entries stream=duration \
+    -of default=noprint_wrappers=1:nokey=1 -sexagesimal "$_file")
+echo "Duration of ${_filebase}: ${duration}"
+
 # get dimension to crop a video by it's (possible) black borders, skipping to minute three first, process 120 frames
 # The leading < /dev/null IS IMPORTANT, else ffmpeg drops into command mode, reading stdin
 cropsize=$(< /dev/null ffmpeg -ss 00:03:00 -i "$_file" -vf cropdetect -vframes 120 -f null - 2>&1 | awk '/crop/ { print $NF }' | tail -1)
-echo "Cropsize is: ${cropsize}"
+echo "Cropsize of ${_filebase} is: ${cropsize}"
 
 # if audio stream isn't aac, transcode. Else just copy it.
 #audio_type=$(${ffprobe} -v error -select_streams a:0 \
@@ -72,10 +77,6 @@ if [[ $(echo "$resolution" | sed -r 's/^([0-9]+).*/\1/') -gt 2500 ]]; then
 else
     vcodec="x264"
 fi
-
-duration=$("$ffprobe" -v error -select_streams v:0 -show_entries stream=duration \
-    -of default=noprint_wrappers=1:nokey=1 -sexagesimal "$_file")
-echo "${_file}: ${duration}"
 
 _common_options='-nostdin -hide_banner -loglevel warning -stats'
 # $=audio forces word splitting. Else we would pass in -acodec... with ' quotes

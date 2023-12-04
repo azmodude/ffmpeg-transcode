@@ -6,7 +6,6 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
 shopt -s nullglob
 
-set -vx
 [[ -z "${1}" ]] && source='.' || source="${1}"
 [[ -z "${2}" ]] && preset='slow' || preset="${2}"
 
