@@ -109,6 +109,6 @@ else
     set +x
 fi
 
-size_after=$(du -hs "${_outputdir}/$_filebase" | cut -f1)
-echo "Size of ${_filebase} before transcode: ${size_after}"
+size_after=$(du -hs "${_outputdir}/${_outfile}" | cut -f1)
+echo "Size of ${_outfile} after transcode: ${size_after}"
 echo "--------------------------------------------------------------------------------"
